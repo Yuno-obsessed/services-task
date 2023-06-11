@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package pkg;
+option go_package = "pkg/servicespb";
+
+service Provider {
+    rpc Provide(SymbolsRequest) returns (SymbolsResponse) {};
+}
+
+message SymbolsResponse{
+    string symbols = 1;
+    int64 dateGenerated = 2;
+}
+
+message SymbolsRequest{
+    string providerService = 1;
+}
+
+service Receiver {
+    rpc Receive(SymbolsResponse) returns (ProcessedSymbols) {};
+}
+
+message ProcessedSymbols {
+   string symbols = 1;
+   int64 length = 2;    
+   int64 dateGenerated = 3;
+   int64 dateSaved = 4;
+   string receiverService = 5;
+}
+
+service Visualizer {
+    rpc Visualize(ProcessedSymbols) returns (PresentedSymbols) {};
+}
+
+message PresentedSymbols {
+   string symbols = 1;
+   int64 length = 2;    
+   int64 dataGenerated = 3;
+   int64 dateSaved = 4;
+   string providerService = 5;
+   string receiverService = 6;
+}
