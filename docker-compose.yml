@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: sanity
+      MONGO_INITDB_ROOT_PASSWORD: wordpass
+    volumes:
+      - dbdata:/docker-entrypoint-initdb.d
+volumes:
+  dbdata:

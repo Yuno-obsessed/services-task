@@ -25,7 +25,10 @@ func main() {
 			ctx.JSON(500, gin.H{"err:": err.Error()})
 			return
 		}
-		ctx.JSON(200, gin.H{"string": res})
+		ctx.JSON(200, res)
 	})
-	r.Run(":5000")
+	err = r.Run(":5001")
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
 }

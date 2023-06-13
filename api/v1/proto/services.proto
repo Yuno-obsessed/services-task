@@ -10,6 +10,7 @@ service Provider {
 message SymbolsResponse{
     string symbols = 1;
     int64 dateGenerated = 2;
+    string providerService = 3;
 }
 
 message SymbolsRequest{
