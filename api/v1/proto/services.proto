@@ -4,40 +4,69 @@ package pkg;
 option go_package = "pkg/servicespb";
 
 service Provider {
-    rpc Provide(SymbolsRequest) returns (SymbolsResponse) {};
+    rpc Provide(ProvideLogsRequest) returns (ProvideLogsResponse) {};
 }
 
-message SymbolsResponse{
-    string symbols = 1;
+message ProvideLogsResponse{
+    string logs = 1;
     int64 dateGenerated = 2;
     string providerService = 3;
 }
 
-message SymbolsRequest{
+message ProvideLogsRequest{
     string providerService = 1;
 }
 
-service Receiver {
-    rpc Receive(SymbolsResponse) returns (ProcessedSymbols) {};
+message ReceiveLogsRequest {
+  ProvideLogsResponse logs = 1;
 }
 
-message ProcessedSymbols {
-   string symbols = 1;
-   int64 length = 2;    
-   int64 dateGenerated = 3;
-   int64 dateSaved = 4;
-   string receiverService = 5;
+message ResponseStatus {
+  int32 status = 1;
+}
+
+service Receiver {
+    rpc Receive(ReceiveLogsRequest) returns (ResponseStatus) {};
+    rpc Fetch(Filters) returns (FetchResponse) {};
 }
 
 service Visualizer {
-    rpc Visualize(ProcessedSymbols) returns (PresentedSymbols) {};
+    rpc Visualize(Filters) returns (VisualizeResponse) {};
 }
 
-message PresentedSymbols {
-   string symbols = 1;
+message Filters {
+  int64 page = 1;
+  int64 pageSize = 2;
+  string match = 3;
+  int64 dateGeneratedBefore = 4;
+  int64 dateGeneratedAfter = 5;
+  int64 lengthLess = 6;
+  int64 lengthGreater = 7;
+}
+
+message FetchedLogs {
+   string logs = 1;
    int64 length = 2;    
    int64 dataGenerated = 3;
    int64 dateSaved = 4;
    string providerService = 5;
    string receiverService = 6;
+}
+
+message VisualizeInfo {
+  string logs = 1;
+  int64 length = 2;
+  int64 dataGenerated = 3;
+  int64 dateSaved = 4;
+  string providerService = 5;
+  string receiverService = 6;
+  int64 diffGeneratedSaved = 7;
+}
+
+message FetchResponse {
+  repeated FetchedLogs logs = 1;
+}
+
+message VisualizeResponse {
+  VisualizeInfo info = 1;
 }

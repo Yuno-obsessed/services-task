@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProviderClient interface {
-	Provide(ctx context.Context, in *SymbolsRequest, opts ...grpc.CallOption) (*SymbolsResponse, error)
+	Provide(ctx context.Context, in *ProvideLogsRequest, opts ...grpc.CallOption) (*ProvideLogsResponse, error)
 }
 
 type providerClient struct {
@@ -33,8 +33,8 @@ func NewProviderClient(cc grpc.ClientConnInterface) ProviderClient {
 	return &providerClient{cc}
 }
 
-func (c *providerClient) Provide(ctx context.Context, in *SymbolsRequest, opts ...grpc.CallOption) (*SymbolsResponse, error) {
-	out := new(SymbolsResponse)
+func (c *providerClient) Provide(ctx context.Context, in *ProvideLogsRequest, opts ...grpc.CallOption) (*ProvideLogsResponse, error) {
+	out := new(ProvideLogsResponse)
 	err := c.cc.Invoke(ctx, "/pkg.Provider/Provide", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (c *providerClient) Provide(ctx context.Context, in *SymbolsRequest, opts .
 // All implementations must embed UnimplementedProviderServer
 // for forward compatibility
 type ProviderServer interface {
-	Provide(context.Context, *SymbolsRequest) (*SymbolsResponse, error)
+	Provide(context.Context, *ProvideLogsRequest) (*ProvideLogsResponse, error)
 	mustEmbedUnimplementedProviderServer()
 }
 
@@ -54,7 +54,7 @@ type ProviderServer interface {
 type UnimplementedProviderServer struct {
 }
 
-func (UnimplementedProviderServer) Provide(context.Context, *SymbolsRequest) (*SymbolsResponse, error) {
+func (UnimplementedProviderServer) Provide(context.Context, *ProvideLogsRequest) (*ProvideLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Provide not implemented")
 }
 func (UnimplementedProviderServer) mustEmbedUnimplementedProviderServer() {}
@@ -71,7 +71,7 @@ func RegisterProviderServer(s grpc.ServiceRegistrar, srv ProviderServer) {
 }
 
 func _Provider_Provide_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SymbolsRequest)
+	in := new(ProvideLogsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func _Provider_Provide_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/pkg.Provider/Provide",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProviderServer).Provide(ctx, req.(*SymbolsRequest))
+		return srv.(ProviderServer).Provide(ctx, req.(*ProvideLogsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -108,7 +108,8 @@ var Provider_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ReceiverClient interface {
-	Receive(ctx context.Context, in *SymbolsResponse, opts ...grpc.CallOption) (*ProcessedSymbols, error)
+	Receive(ctx context.Context, in *ReceiveLogsRequest, opts ...grpc.CallOption) (*ResponseStatus, error)
+	Fetch(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*FetchResponse, error)
 }
 
 type receiverClient struct {
@@ -119,9 +120,18 @@ func NewReceiverClient(cc grpc.ClientConnInterface) ReceiverClient {
 	return &receiverClient{cc}
 }
 
-func (c *receiverClient) Receive(ctx context.Context, in *SymbolsResponse, opts ...grpc.CallOption) (*ProcessedSymbols, error) {
-	out := new(ProcessedSymbols)
+func (c *receiverClient) Receive(ctx context.Context, in *ReceiveLogsRequest, opts ...grpc.CallOption) (*ResponseStatus, error) {
+	out := new(ResponseStatus)
 	err := c.cc.Invoke(ctx, "/pkg.Receiver/Receive", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *receiverClient) Fetch(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*FetchResponse, error) {
+	out := new(FetchResponse)
+	err := c.cc.Invoke(ctx, "/pkg.Receiver/Fetch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +142,8 @@ func (c *receiverClient) Receive(ctx context.Context, in *SymbolsResponse, opts 
 // All implementations must embed UnimplementedReceiverServer
 // for forward compatibility
 type ReceiverServer interface {
-	Receive(context.Context, *SymbolsResponse) (*ProcessedSymbols, error)
+	Receive(context.Context, *ReceiveLogsRequest) (*ResponseStatus, error)
+	Fetch(context.Context, *Filters) (*FetchResponse, error)
 	mustEmbedUnimplementedReceiverServer()
 }
 
@@ -140,8 +151,11 @@ type ReceiverServer interface {
 type UnimplementedReceiverServer struct {
 }
 
-func (UnimplementedReceiverServer) Receive(context.Context, *SymbolsResponse) (*ProcessedSymbols, error) {
+func (UnimplementedReceiverServer) Receive(context.Context, *ReceiveLogsRequest) (*ResponseStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Receive not implemented")
+}
+func (UnimplementedReceiverServer) Fetch(context.Context, *Filters) (*FetchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Fetch not implemented")
 }
 func (UnimplementedReceiverServer) mustEmbedUnimplementedReceiverServer() {}
 
@@ -157,7 +171,7 @@ func RegisterReceiverServer(s grpc.ServiceRegistrar, srv ReceiverServer) {
 }
 
 func _Receiver_Receive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SymbolsResponse)
+	in := new(ReceiveLogsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -169,7 +183,25 @@ func _Receiver_Receive_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/pkg.Receiver/Receive",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ReceiverServer).Receive(ctx, req.(*SymbolsResponse))
+		return srv.(ReceiverServer).Receive(ctx, req.(*ReceiveLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Receiver_Fetch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Filters)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReceiverServer).Fetch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pkg.Receiver/Fetch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReceiverServer).Fetch(ctx, req.(*Filters))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -185,6 +217,10 @@ var Receiver_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Receive",
 			Handler:    _Receiver_Receive_Handler,
 		},
+		{
+			MethodName: "Fetch",
+			Handler:    _Receiver_Fetch_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "services.proto",
@@ -194,7 +230,7 @@ var Receiver_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VisualizerClient interface {
-	Visualize(ctx context.Context, in *ProcessedSymbols, opts ...grpc.CallOption) (*PresentedSymbols, error)
+	Visualize(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*VisualizeResponse, error)
 }
 
 type visualizerClient struct {
@@ -205,8 +241,8 @@ func NewVisualizerClient(cc grpc.ClientConnInterface) VisualizerClient {
 	return &visualizerClient{cc}
 }
 
-func (c *visualizerClient) Visualize(ctx context.Context, in *ProcessedSymbols, opts ...grpc.CallOption) (*PresentedSymbols, error) {
-	out := new(PresentedSymbols)
+func (c *visualizerClient) Visualize(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*VisualizeResponse, error) {
+	out := new(VisualizeResponse)
 	err := c.cc.Invoke(ctx, "/pkg.Visualizer/Visualize", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -218,7 +254,7 @@ func (c *visualizerClient) Visualize(ctx context.Context, in *ProcessedSymbols, 
 // All implementations must embed UnimplementedVisualizerServer
 // for forward compatibility
 type VisualizerServer interface {
-	Visualize(context.Context, *ProcessedSymbols) (*PresentedSymbols, error)
+	Visualize(context.Context, *Filters) (*VisualizeResponse, error)
 	mustEmbedUnimplementedVisualizerServer()
 }
 
@@ -226,7 +262,7 @@ type VisualizerServer interface {
 type UnimplementedVisualizerServer struct {
 }
 
-func (UnimplementedVisualizerServer) Visualize(context.Context, *ProcessedSymbols) (*PresentedSymbols, error) {
+func (UnimplementedVisualizerServer) Visualize(context.Context, *Filters) (*VisualizeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Visualize not implemented")
 }
 func (UnimplementedVisualizerServer) mustEmbedUnimplementedVisualizerServer() {}
@@ -243,7 +279,7 @@ func RegisterVisualizerServer(s grpc.ServiceRegistrar, srv VisualizerServer) {
 }
 
 func _Visualizer_Visualize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ProcessedSymbols)
+	in := new(Filters)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -255,7 +291,7 @@ func _Visualizer_Visualize_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/pkg.Visualizer/Visualize",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VisualizerServer).Visualize(ctx, req.(*ProcessedSymbols))
+		return srv.(VisualizerServer).Visualize(ctx, req.(*Filters))
 	}
 	return interceptor(ctx, in, info, handler)
 }

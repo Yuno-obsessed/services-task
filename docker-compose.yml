@@ -10,5 +10,15 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: wordpass
     volumes:
       - dbdata:/docker-entrypoint-initdb.d
+  provider:
+    build:
+      dockerfile:
+        provider/Dockerfile
+    environment:
+      - CLIENT_PORT=5001
+      - SERVER_PORT=50051
+    ports:
+      - "5001:5001"
+      - "50051:50051"
 volumes:
   dbdata:

@@ -7,7 +7,7 @@ import (
 
 type Message struct {
 	Id        primitive.ObjectID `bson:"_id"`
-	Text      string             `bson:"text"`
+	Logs      string             `bson:"text"`
 	CreatedAt time.Time          `bson:"created_at"`
 	StoredAt  time.Time          `bson:"stored_at"`
 }

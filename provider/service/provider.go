@@ -16,11 +16,11 @@ func NewProviderServer() *ProviderServer {
 	return &ProviderServer{}
 }
 
-func (s *ProviderServer) Provide(ctx context.Context, req *servicespb.SymbolsRequest) (*servicespb.SymbolsResponse, error) {
+func (s *ProviderServer) Provide(ctx context.Context, req *servicespb.ProvideLogsRequest) (*servicespb.ProvideLogsResponse, error) {
 	randomString, err := generateRandomString()
 
-	response := &servicespb.SymbolsResponse{
-		Symbols:       randomString,
+	response := &servicespb.ProvideLogsResponse{
+		Logs:          randomString,
 		DateGenerated: time.Now().Unix(),
 	}
 
@@ -32,7 +32,7 @@ var Random = random.New(random.NewSource(time.Now().UnixNano()))
 func generateRandomString() (string, error) {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-	length := Random.Intn(2000-1000+1) + 1000
+	length := Random.Intn(25000-10000+1) + 10000
 
 	randomBytes := make([]byte, length)
 	_, err := rand.Read(randomBytes)

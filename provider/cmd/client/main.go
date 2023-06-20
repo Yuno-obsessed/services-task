@@ -20,7 +20,7 @@ func main() {
 	client := servicespb.NewProviderClient(conn)
 	r := gin.Default()
 	r.GET("/provide", func(ctx *gin.Context) {
-		res, err := client.Provide(ctx, &servicespb.SymbolsRequest{})
+		res, err := client.Provide(ctx, &servicespb.ProvideLogsRequest{})
 		if err != nil {
 			ctx.JSON(500, gin.H{"err:": err.Error()})
 			return
