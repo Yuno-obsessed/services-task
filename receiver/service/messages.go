@@ -42,7 +42,7 @@ func (r *MessageService) SaveMessage(ctx context.Context, model model.Message) (
 
 func (r *MessageService) GetMessage(ctx context.Context, id primitive.ObjectID) (model.Message, error) {
 	var result model.Message
-	err := r.Conn.FindOne(context.Background(), bson.D{{"_id", id}}).Decode(&result)
+	err := r.Conn.FindOne(ctx, bson.D{{"_id", id}}).Decode(&result)
 	return result, err
 }
 
@@ -66,6 +66,7 @@ func (r *MessageService) GetWithFilters(ctx context.Context, filters dto.Filters
 	filterLengthLess := bson.M{}
 	filterDateAfter := bson.M{}
 	filterDateBefore := bson.M{}
+	filterMatch := bson.M{}
 	page := filters.Page
 	pageSize := filters.PageSize
 	var skip int64
@@ -104,6 +105,9 @@ func (r *MessageService) GetWithFilters(ctx context.Context, filters dto.Filters
 
 	findOptions := options.Find()
 	if filters.PageSize == 0 {
+		if filters.Page == 0 {
+			page = 1
+		}
 		pageSize = 20
 		skip = (page - 1) * pageSize
 	}
@@ -111,22 +115,27 @@ func (r *MessageService) GetWithFilters(ctx context.Context, filters dto.Filters
 	findOptions.SetSkip(skip)
 	findOptions.SetLimit(pageSize)
 
-	if filters.DateGeneratedAfter != 0 {
-		filter = bson.M{
-			"$and": []bson.M{
-				{
-					"text": bson.M{
-						"$ne":      "",
-						"$regex":   filters.Match,
-						"$options": "i",
-					},
-				},
-				filterDateAfter,
-				filterDateBefore,
-				filterLengthGreater,
-				filterLengthLess,
+	if filters.Match != "" {
+		if filters.Match == "empty" {
+			filters.Match = "^$"
+		}
+		filterMatch = bson.M{
+			"text": bson.M{
+				//"$ne":      "",
+				"$regex":   filters.Match,
+				"$options": "i",
 			},
 		}
+	}
+
+	filter = bson.M{
+		"$and": []bson.M{
+			filterMatch,
+			filterDateAfter,
+			filterDateBefore,
+			filterLengthGreater,
+			filterLengthLess,
+		},
 	}
 
 	res, err := r.Conn.Find(ctx, filter, findOptions)
@@ -148,4 +157,12 @@ func (r *MessageService) GetWithFilters(ctx context.Context, filters dto.Filters
 		return nil, err
 	}
 	return result, nil
+}
+
+func (r *MessageService) Delete(ctx context.Context, id primitive.ObjectID) error {
+	res, err := r.Conn.DeleteOne(ctx, bson.D{{"_id", id}})
+	if err != nil || res.DeletedCount == 0 {
+		return err
+	}
+	return nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -23,14 +24,14 @@ func main() {
 	r := gin.Default()
 	r.GET("/visualize", func(ctx *gin.Context) {
 
-		var filters servicespb.Filters
-		err := json.NewDecoder(ctx.Request.Body).Decode(&filters)
+		var provideRequest servicespb.VisualizeRequest
+		err := json.NewDecoder(ctx.Request.Body).Decode(&provideRequest)
 		if err != nil {
 			ctx.JSON(500, gin.H{"err:": err.Error()})
 			return
 		}
-
-		payload, err := json.Marshal(&filters)
+		fmt.Println(&provideRequest)
+		payload, err := json.Marshal(provideRequest.Filters)
 		if err != nil {
 			ctx.JSON(500, gin.H{"err:": err.Error()})
 			return
@@ -53,7 +54,10 @@ func main() {
 			ctx.JSON(500, gin.H{"err:": err.Error()})
 			return
 		}
-		visualizeRequest := servicespb.Filters{}
+		visualizeRequest := servicespb.VisualizeRequest{
+			Filters: provideRequest.Filters,
+			Logs:    &provideResponse,
+		}
 
 		res, err := client.Visualize(ctx, &visualizeRequest)
 		if err != nil {

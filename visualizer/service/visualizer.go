@@ -13,14 +13,18 @@ func NewVisualizerService() *VisualizerService {
 	return &VisualizerService{}
 }
 
-func (v *VisualizerService) Visualize(ctx context.Context, request *servicespb.ProcessedSymbols) (*servicespb.PresentedSymbols, error) {
-	response := servicespb.PresentedSymbols{
-		Symbols:         request.Symbols,
-		Length:          request.Length,
-		DataGenerated:   request.DateGenerated,
-		DateSaved:       request.DateSaved,
-		ProviderService: request.ProviderService,
-		ReceiverService: request.ReceiverService,
+func (v *VisualizerService) Visualize(ctx context.Context, request *servicespb.VisualizeRequest) (*servicespb.VisualizeResponse, error) {
+	response := servicespb.VisualizeResponse{}
+
+	for _, v := range request.Logs.Logs {
+		responseElement := servicespb.VisualizeInfo{
+			Logs:               v.Logs,
+			Length:             v.Length,
+			DateGenerated:      v.DateGenerated,
+			DateSaved:          v.DateSaved,
+			DiffGeneratedSaved: v.DateGenerated - v.DateSaved,
+		}
+		response.Info = append(response.Info, &responseElement)
 	}
 	return &response, nil
 }

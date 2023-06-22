@@ -18,20 +18,25 @@ message ProvideLogsRequest{
 }
 
 message ReceiveLogsRequest {
-  ProvideLogsResponse logs = 1;
+    ProvideLogsResponse logs = 1;
 }
 
 message ResponseStatus {
   int32 status = 1;
 }
 
+message DeleteRequest {
+  string id = 1;
+}
+
 service Receiver {
     rpc Receive(ReceiveLogsRequest) returns (ResponseStatus) {};
     rpc Fetch(Filters) returns (FetchResponse) {};
+    rpc Delete(DeleteRequest) returns (ResponseStatus) {};
 }
 
 service Visualizer {
-    rpc Visualize(Filters) returns (VisualizeResponse) {};
+    rpc Visualize(VisualizeRequest) returns (VisualizeResponse) {};
 }
 
 message Filters {
@@ -44,19 +49,25 @@ message Filters {
   int64 lengthGreater = 7;
 }
 
+message VisualizeRequest {
+  Filters filters = 1;
+  FetchResponse logs = 2;
+}
+
 message FetchedLogs {
-   string logs = 1;
-   int64 length = 2;    
-   int64 dataGenerated = 3;
-   int64 dateSaved = 4;
-   string providerService = 5;
-   string receiverService = 6;
+  string id = 1;
+  string logs = 2;
+  int64 length = 3;
+  int64 dateGenerated = 4;
+  int64 dateSaved = 5;
+  string providerService = 6;
+  string receiverService = 7;
 }
 
 message VisualizeInfo {
   string logs = 1;
   int64 length = 2;
-  int64 dataGenerated = 3;
+  int64 dateGenerated = 3;
   int64 dateSaved = 4;
   string providerService = 5;
   string receiverService = 6;
@@ -68,5 +79,5 @@ message FetchResponse {
 }
 
 message VisualizeResponse {
-  VisualizeInfo info = 1;
+  repeated VisualizeInfo info = 1;
 }

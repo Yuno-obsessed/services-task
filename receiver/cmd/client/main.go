@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -55,6 +56,7 @@ func main() {
 			ctx.JSON(500, gin.H{"err:": err.Error()})
 			return
 		}
+		fmt.Println(filters)
 
 		m, err := client.Fetch(ctx, &filters)
 		if err != nil {
@@ -63,6 +65,14 @@ func main() {
 		}
 
 		ctx.JSONP(200, m)
+	})
+	r.DELETE("/delete/:id", func(ctx *gin.Context) {
+		status, err := client.Delete(ctx, &servicespb.DeleteRequest{Id: ctx.Param("id")})
+		if err != nil {
+			ctx.JSON(500, gin.H{"err": err.Error()})
+			return
+		}
+		ctx.JSON(int(status.Status), nil)
 	})
 	err = r.Run(":5002")
 	if err != nil {

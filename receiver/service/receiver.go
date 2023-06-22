@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"services-task/pkg/servicespb"
 	"services-task/receiver/dto"
@@ -62,9 +63,10 @@ func (s *ReceiverService) Fetch(ctx context.Context, request *servicespb.Filters
 		return nil, err
 	}
 
-	logs := []*servicespb.FetchedLogs{}
+	var logs []*servicespb.FetchedLogs
 	for _, v := range m {
 		resLogs := servicespb.FetchedLogs{
+			Id:            v.Id.String(),
 			Logs:          v.Logs,
 			Length:        int64(len(v.Logs)),
 			DataGenerated: v.CreatedAt.Unix(),
@@ -76,4 +78,17 @@ func (s *ReceiverService) Fetch(ctx context.Context, request *servicespb.Filters
 	response.Logs = logs
 
 	return &response, nil
+}
+
+func (s *ReceiverService) Delete(ctx context.Context, request *servicespb.DeleteRequest) (*servicespb.ResponseStatus, error) {
+	prim, err := primitive.ObjectIDFromHex(request.Id)
+	if err != nil {
+		log.Println("error converting id to primitive", err)
+		return &servicespb.ResponseStatus{Status: 401}, err
+	}
+	err = s.Service.Delete(ctx, prim)
+	if err != nil {
+		return &servicespb.ResponseStatus{Status: 401}, err
+	}
+	return &servicespb.ResponseStatus{Status: 204}, nil
 }

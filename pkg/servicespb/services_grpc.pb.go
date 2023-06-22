@@ -110,6 +110,7 @@ var Provider_ServiceDesc = grpc.ServiceDesc{
 type ReceiverClient interface {
 	Receive(ctx context.Context, in *ReceiveLogsRequest, opts ...grpc.CallOption) (*ResponseStatus, error)
 	Fetch(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*FetchResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*ResponseStatus, error)
 }
 
 type receiverClient struct {
@@ -138,12 +139,22 @@ func (c *receiverClient) Fetch(ctx context.Context, in *Filters, opts ...grpc.Ca
 	return out, nil
 }
 
+func (c *receiverClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*ResponseStatus, error) {
+	out := new(ResponseStatus)
+	err := c.cc.Invoke(ctx, "/pkg.Receiver/Delete", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReceiverServer is the server API for Receiver service.
 // All implementations must embed UnimplementedReceiverServer
 // for forward compatibility
 type ReceiverServer interface {
 	Receive(context.Context, *ReceiveLogsRequest) (*ResponseStatus, error)
 	Fetch(context.Context, *Filters) (*FetchResponse, error)
+	Delete(context.Context, *DeleteRequest) (*ResponseStatus, error)
 	mustEmbedUnimplementedReceiverServer()
 }
 
@@ -156,6 +167,9 @@ func (UnimplementedReceiverServer) Receive(context.Context, *ReceiveLogsRequest)
 }
 func (UnimplementedReceiverServer) Fetch(context.Context, *Filters) (*FetchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Fetch not implemented")
+}
+func (UnimplementedReceiverServer) Delete(context.Context, *DeleteRequest) (*ResponseStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedReceiverServer) mustEmbedUnimplementedReceiverServer() {}
 
@@ -206,6 +220,24 @@ func _Receiver_Fetch_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Receiver_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReceiverServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pkg.Receiver/Delete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReceiverServer).Delete(ctx, req.(*DeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Receiver_ServiceDesc is the grpc.ServiceDesc for Receiver service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -221,6 +253,10 @@ var Receiver_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Fetch",
 			Handler:    _Receiver_Fetch_Handler,
 		},
+		{
+			MethodName: "Delete",
+			Handler:    _Receiver_Delete_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "services.proto",
@@ -230,7 +266,7 @@ var Receiver_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VisualizerClient interface {
-	Visualize(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*VisualizeResponse, error)
+	Visualize(ctx context.Context, in *VisualizeRequest, opts ...grpc.CallOption) (*VisualizeResponse, error)
 }
 
 type visualizerClient struct {
@@ -241,7 +277,7 @@ func NewVisualizerClient(cc grpc.ClientConnInterface) VisualizerClient {
 	return &visualizerClient{cc}
 }
 
-func (c *visualizerClient) Visualize(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*VisualizeResponse, error) {
+func (c *visualizerClient) Visualize(ctx context.Context, in *VisualizeRequest, opts ...grpc.CallOption) (*VisualizeResponse, error) {
 	out := new(VisualizeResponse)
 	err := c.cc.Invoke(ctx, "/pkg.Visualizer/Visualize", in, out, opts...)
 	if err != nil {
@@ -254,7 +290,7 @@ func (c *visualizerClient) Visualize(ctx context.Context, in *Filters, opts ...g
 // All implementations must embed UnimplementedVisualizerServer
 // for forward compatibility
 type VisualizerServer interface {
-	Visualize(context.Context, *Filters) (*VisualizeResponse, error)
+	Visualize(context.Context, *VisualizeRequest) (*VisualizeResponse, error)
 	mustEmbedUnimplementedVisualizerServer()
 }
 
@@ -262,7 +298,7 @@ type VisualizerServer interface {
 type UnimplementedVisualizerServer struct {
 }
 
-func (UnimplementedVisualizerServer) Visualize(context.Context, *Filters) (*VisualizeResponse, error) {
+func (UnimplementedVisualizerServer) Visualize(context.Context, *VisualizeRequest) (*VisualizeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Visualize not implemented")
 }
 func (UnimplementedVisualizerServer) mustEmbedUnimplementedVisualizerServer() {}
@@ -279,7 +315,7 @@ func RegisterVisualizerServer(s grpc.ServiceRegistrar, srv VisualizerServer) {
 }
 
 func _Visualizer_Visualize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Filters)
+	in := new(VisualizeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -291,7 +327,7 @@ func _Visualizer_Visualize_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/pkg.Visualizer/Visualize",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VisualizerServer).Visualize(ctx, req.(*Filters))
+		return srv.(VisualizerServer).Visualize(ctx, req.(*VisualizeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
