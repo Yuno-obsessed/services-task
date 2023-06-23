@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"services-task/pkg/servicespb"
+	"github.com/Yuno-obsessed/services-task/pkg/servicespb"
 )
 
 type VisualizerService struct {

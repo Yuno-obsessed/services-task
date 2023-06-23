@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
+	"github.com/Yuno-obsessed/services-task/pkg/servicespb"
+	"github.com/Yuno-obsessed/services-task/receiver/dto"
+	"github.com/Yuno-obsessed/services-task/receiver/model"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
-	"services-task/pkg/servicespb"
-	"services-task/receiver/dto"
-	"services-task/receiver/model"
 	"time"
 )
 
@@ -69,7 +69,7 @@ func (s *ReceiverService) Fetch(ctx context.Context, request *servicespb.Filters
 			Id:            v.Id.String(),
 			Logs:          v.Logs,
 			Length:        int64(len(v.Logs)),
-			DataGenerated: v.CreatedAt.Unix(),
+			DateGenerated: v.CreatedAt.Unix(),
 			DateSaved:     v.StoredAt.Unix(),
 		}
 		logs = append(logs, &resLogs)

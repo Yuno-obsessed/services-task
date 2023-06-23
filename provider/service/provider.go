@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"github.com/Yuno-obsessed/services-task/pkg/servicespb"
 	random "math/rand"
-	"services-task/pkg/servicespb"
 	"time"
 )
 

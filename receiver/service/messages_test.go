@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
+	"github.com/Yuno-obsessed/services-task/receiver/dto"
+	"github.com/Yuno-obsessed/services-task/receiver/model"
 	"github.com/stretchr/testify/assert"
-	"services-task/receiver/dto"
-	"services-task/receiver/model"
 	"testing"
 	"time"
 )
